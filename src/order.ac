@@ -422,7 +422,7 @@ theorem gt_iff_gte_and_ne[P: PartialOrder](a: P, b: P) {
 
 /// `<` is the asymmetric part of `<=`: `a < b` iff not `b <= a` and `a <= b`.
 theorem lt_iff_lte_not_lte_swap[P: PartialOrder](a: P, b: P) {
-    a < b = (not (b <= a) and a <= b)
+    a < b = (a <= b and not (a >= b))
 } by {
     if a < b {
         a <= b
