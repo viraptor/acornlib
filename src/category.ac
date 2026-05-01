@@ -254,6 +254,34 @@ theorem category_id_right[O, M](c: Category[O, M], f: M) {
     }
 }
 
+/// Construction of a category remembers its source map.
+theorem category_new_src[O, M](
+    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
+) {
+    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.src = s
+}
+
+/// Construction of a category remembers its target map.
+theorem category_new_dst[O, M](
+    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
+) {
+    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.dst = d
+}
+
+/// Construction of a category remembers its identity map.
+theorem category_new_identity[O, M](
+    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
+) {
+    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.identity = ident
+}
+
+/// Construction of a category remembers its composition.
+theorem category_new_compose[O, M](
+    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
+) {
+    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.compose = comp
+}
+
 /// True if a pair of morphisms `(f, g)` is composable, i.e. the source of `f` matches the target of `g`.
 define composable[O, M](c: Category[O, M], f: M, g: M) -> Bool {
     c.src(f) = c.dst(g)

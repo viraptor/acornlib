@@ -2,7 +2,8 @@
 
 from category import Category, is_category, category_id_endpoints_constraint,
     category_compose_src_constraint, category_compose_dst_constraint,
-    category_assoc_constraint, category_id_left_constraint, category_id_right_constraint
+    category_assoc_constraint, category_id_left_constraint, category_id_right_constraint,
+    category_new_src, category_new_dst, category_new_identity, category_new_compose
 from functions import identity_fn
 
 /// Composition for the discrete category, defined as the outer morphism.
@@ -54,34 +55,6 @@ theorem discrete_is_category[O](anchor: O) {
         discrete_compose[O](f, identity_fn[O](identity_fn[O](f))) = f
     }
     category_id_right_constraint(identity_fn[O], identity_fn[O], identity_fn[O], discrete_compose[O])
-}
-
-/// Construction of a category remembers its source map.
-theorem category_new_src[O, M](
-    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
-) {
-    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.src = s
-}
-
-/// Construction of a category remembers its target map.
-theorem category_new_dst[O, M](
-    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
-) {
-    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.dst = d
-}
-
-/// Construction of a category remembers its identity map.
-theorem category_new_identity[O, M](
-    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
-) {
-    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.identity = ident
-}
-
-/// Construction of a category remembers its composition.
-theorem category_new_compose[O, M](
-    s: M -> O, d: M -> O, ident: O -> M, comp: (M, M) -> M, c: Category[O, M]
-) {
-    Category[O, M].new(s, d, ident, comp) = Option.some(c) implies c.compose = comp
 }
 
 /// The discrete category on a type, with one identity morphism per object.

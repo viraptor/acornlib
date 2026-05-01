@@ -10,7 +10,7 @@ Goal: provide the categorical abstractions that Mathlib uses to organize large m
 - [ ] Add per-field accessor theorems for `discrete_category(anchor)` once the prover
       can extract them in under 5s (currently times out; deferred via comment in
       `src/discrete_category.ac`)
-- [ ] Build the opposite category construction
+- [ ] Add `opposite_category(opposite_category(c)) = c` involution theorem
 - [ ] Build the product category construction
 - [ ] Add a small example category instance (e.g. terminal/initial 1-object category)
 
