@@ -1,0 +1,41 @@
+/// Minimal reproduction of an Acorn certificate-serialization bug.
+///
+/// `acorn` (cached) succeeds; `acorn check` (strict regeneration) fails with:
+///   "<theorem> certificate failed to verify: generated invalid code:
+///    proof does not result in a contradiction"
+///
+/// The bug requires:
+/// 1. A two-parameter predicate `P[Y: TcB, Z: TcB]` (two typeclass-bound types)
+///    whose body uses a `forall` over the typeclass-bound type.
+/// 2. Instantiating that predicate with Y = Z.
+/// 3. An anonymous `function(y: Y) { y }` lambda passed as the function argument.
+///
+/// Replacing the lambda with a named definition of the identity, or removing
+/// the `forall` from the predicate, makes both `acorn` and `acorn check` succeed.
+///
+/// Discovered while bundling `ModuleHom[R: Ring, M: AddCommGroup,
+/// N: AddCommGroup]` (a linear map between R-modules); the bundled struct
+/// produced this and related serialization errors.
+
+typeclass B: TcB {
+    op: B -> B -> B
+}
+
+/// A two-parameter predicate over functions between TcB-typed sources/destinations.
+define preserves_op[Y: TcB, Z: TcB](f: Y -> Z) -> Bool {
+    forall(y1: Y, y2: Y) {
+        f(Y.op(y1, y2)) = Z.op(f(y1), f(y2))
+    }
+}
+
+/// The anonymous identity lambda preserves the operation when source = dest.
+/// Triggers the bug under strict `acorn check`.
+theorem identity_lambda_preserves_op[Y: TcB] {
+    preserves_op[Y, Y](function(y: Y) { y })
+} by {
+    forall(y1: Y, y2: Y) {
+        function(y: Y) { y }(Y.op(y1, y2)) = Y.op(y1, y2)
+        function(y: Y) { y }(y1) = y1
+        function(y: Y) { y }(y2) = y2
+    }
+}
