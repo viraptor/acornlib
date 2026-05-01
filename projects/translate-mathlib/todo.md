@@ -11,6 +11,15 @@ Goal: over time, give Acornlib a reasonable analogue of each major area of mathe
       AddCommGroup, AddCommGroup]"). Reproducible via field accessors `.src`/`.dst`/`.hom`
       on such a struct. Next action: report upstream with a minimal repro, then revisit
       bundled `ModuleHom` once fixed.
+- [ ] acorn-bug: category-theory/src/iso.ac - convenience accessor theorems on values
+      produced by a `let ... satisfy` whose result is a `Iso[O, M]` containing a
+      `Category[O, M]` field fail certificate generation with swapped type parameters
+      ("Argument 0 has type Iso[T1*, T0*], but expected Iso[T0*, T1*]"). Affected:
+      `identity_iso(c, x).cat = c`, `iso_sym(e).cat = e.cat`, and the analogous `.hom`/
+      `.inv` accessor theorems. The structure, constructor theorems, and the `satisfy`
+      builders themselves verify; only the field-projection theorems fail. Could not
+      reduce below the real `Category[O, M]` shape. Next action: report upstream with
+      `src/iso.ac` as the concrete trigger, then add the accessor theorems back.
 
 ## Foundational And Core Infrastructure
 

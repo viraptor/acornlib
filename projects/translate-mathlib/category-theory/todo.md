@@ -4,7 +4,9 @@ Goal: provide the categorical abstractions that Mathlib uses to organize large m
 
 ## Categories
 
-- [ ] Add isomorphisms and the `Iso[O, M]` structure
+- [ ] Restore `identity_iso`/`iso_sym` field-accessor theorems in `src/iso.ac` once the
+      blocked `Iso[O, M]` certificate bug is fixed (see root `## Blockers`)
+- [ ] Build composition of isomorphisms in `src/iso.ac` (`iso_trans`)
 - [ ] Build the discrete category construction (objects only, identity morphisms)
 - [ ] Build the opposite category construction
 - [ ] Build the product category construction
