@@ -1,0 +1,63 @@
+/// Reproducer: aggregating two directional `implies` lemmas into a single
+/// boolean `=` over `contains` predicates times out, even though both
+/// directions are already proved theorems.
+///
+/// In `nat_totient.ac` we already have:
+///   - `mul_mod_residues_in_coprime`:
+///       contains in mul_mod_residues   ⟹ contains in coprime_residues
+///   - `coprime_in_mul_mod_residues`:   the converse
+/// Combining them into the iff
+///   `mul_mod_residues(n, a).contains(y) = coprime_residues(n).contains(y)`
+/// reliably times out at the verifier's 5s search budget. Splitting the
+/// goal back into two `implies` clauses verifies instantly.
+///
+/// Run `acorn` to observe the timeout on `timeout_repro_contains_iff`.
+
+from nat.nat_coprime import Nat
+from list.list_base import List
+from list.list_sum import map
+from list.list_product import product
+from nat.nat_totient import mul_mod_residues, coprime_residues, mul_mod_residues_in_coprime, coprime_in_mul_mod_residues
+numerals Nat
+
+/// FAILS (timeout): the aggregating boolean `=` form.
+theorem timeout_repro_contains_iff(n: Nat, a: Nat, y: Nat) {
+    n != Nat.0 and a.coprime(n)
+        implies (mul_mod_residues(n, a).contains(y) =
+                 coprime_residues(n).contains(y))
+} by {
+    if n != Nat.0 and a.coprime(n) {
+        if mul_mod_residues(n, a).contains(y) {
+            mul_mod_residues_in_coprime(n, a, y)
+        }
+        if coprime_residues(n).contains(y) {
+            coprime_in_mul_mod_residues(n, a, y)
+        }
+    }
+}
+
+/// FAILS as well: even splitting the goal into a conjunction of
+/// implications times out. The work needed in each direction is one
+/// modus-ponens hop on `mul_mod_residues_in_coprime` /
+/// `coprime_in_mul_mod_residues` respectively, both of which already
+/// take `n != 0 and a.coprime(n) and contains(...)` as their hypothesis;
+/// the prover apparently doesn't reuse the search work between the two
+/// directions and exhausts its budget on each.
+theorem timeout_repro_directions_split_imp(n: Nat, a: Nat, y: Nat) {
+    n != Nat.0 and a.coprime(n)
+        implies
+            (mul_mod_residues(n, a).contains(y)
+                implies coprime_residues(n).contains(y))
+            and
+            (coprime_residues(n).contains(y)
+                implies mul_mod_residues(n, a).contains(y))
+} by {
+    if n != Nat.0 and a.coprime(n) {
+        if mul_mod_residues(n, a).contains(y) {
+            mul_mod_residues_in_coprime(n, a, y)
+        }
+        if coprime_residues(n).contains(y) {
+            coprime_in_mul_mod_residues(n, a, y)
+        }
+    }
+}
