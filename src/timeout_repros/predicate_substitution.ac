@@ -1,0 +1,62 @@
+/// Reproducer: pure substitution into a defined predicate times out.
+///
+/// Setup mirrors the no-branch of an inductive step over
+/// `coprime_residues_below(n, k)`. The proof path is:
+///   pred(k) ----[coprime_residues_below(n, k.suc) = coprime_residues_below(n, k)]----> pred(k.suc)
+/// i.e. one equation between the bodies of the two list arguments should
+/// rewrite the predicate body. Each helper certifies on its own; the
+/// combined step times out at the verifier's per-search budget.
+///
+/// Run `acorn` to observe `timeout_repro_no_branch_step` failing with a
+/// 5-second timeout.
+
+from nat.nat_coprime import Nat
+from nat.nat_congruence import congr_mod_refl
+from list.list_base import List
+from list.list_sum import map
+from list.list_product import product
+from nat.nat_totient import coprime_residues_below, coprime_residues_below_suc_no, mul_mod_fn, scalar_mul_fn
+numerals Nat
+
+/// The pred wraps a `congr_mod` of two product-of-mapped-list expressions.
+define repro_pred(n: Nat, a: Nat) -> (Nat -> Bool) {
+    function(k: Nat) {
+        product[Nat](map(coprime_residues_below(n, k), mul_mod_fn(n, a)))
+            .congr_mod(
+                product[Nat](map(coprime_residues_below(n, k), scalar_mul_fn(a))),
+                n)
+    }
+}
+
+/// Bridge: the predicate at any `k` unfolds to its body.
+theorem repro_pred_iff(n: Nat, a: Nat, k: Nat) {
+    repro_pred(n, a)(k) =
+        product[Nat](map(coprime_residues_below(n, k), mul_mod_fn(n, a)))
+            .congr_mod(
+                product[Nat](map(coprime_residues_below(n, k), scalar_mul_fn(a))),
+                n)
+}
+
+/// FAILS: pure substitution but times out (5s search budget).
+///
+/// We have:
+///   - repro_pred(n, a)(k)                              (assumption)
+///   - repro_pred_iff(n, a, k)                          (unfolds it to a congr_mod)
+///   - repro_pred_iff(n, a, k.suc)                      (unfolds the goal)
+///   - coprime_residues_below(n, k.suc)                 (substitution lemma)
+///       = coprime_residues_below(n, k)                  via coprime_residues_below_suc_no
+///
+/// The step is one substitution into both sides of the congr_mod, but the
+/// goal `repro_pred(n, a)(k.suc)` doesn't fall out within the per-search
+/// budget.
+theorem timeout_repro_no_branch_step(n: Nat, a: Nat, k: Nat) {
+    not k.coprime(n) and repro_pred(n, a)(k)
+        implies repro_pred(n, a)(k.suc)
+} by {
+    repro_pred_iff(n, a, k)
+    repro_pred_iff(n, a, k.suc)
+    if not k.coprime(n) and repro_pred(n, a)(k) {
+        coprime_residues_below_suc_no(n, k)
+        coprime_residues_below(n, k.suc) = coprime_residues_below(n, k)
+    }
+}
